@@ -1,25 +1,25 @@
 
 import React from 'react';
-import { themes, Theme } from '../themes';
 
 interface SettingsProps {
   selectedSound: string;
   onSoundChange: (sound: string) => void;
   isSoundEnabled: boolean;
   onSoundToggle: (enabled: boolean) => void;
-  currentTheme: Theme;
-  onThemeChange: (theme: Theme) => void;
+  isTickingSoundEnabled: boolean;
+  onTickingSoundToggle: (enabled: boolean) => void;
   onClose: () => void;
 }
 
-const ToggleSwitch: React.FC<{ checked: boolean; onChange: (checked: boolean) => void }> = ({ checked, onChange }) => (
+const ToggleSwitch: React.FC<{ checked: boolean; onChange: (checked: boolean) => void; disabled?: boolean }> = ({ checked, onChange, disabled = false }) => (
   <button
     role="switch"
     aria-checked={checked}
     onClick={() => onChange(!checked)}
+    disabled={disabled}
     className={`${
       checked ? 'bg-cyan-500' : 'bg-slate-600'
-    } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500`}
+    } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed`}
   >
     <span
       className={`${
@@ -29,7 +29,14 @@ const ToggleSwitch: React.FC<{ checked: boolean; onChange: (checked: boolean) =>
   </button>
 );
 
-const Settings: React.FC<SettingsProps> = ({ selectedSound, onSoundChange, isSoundEnabled, onSoundToggle, currentTheme, onThemeChange }) => {
+const Settings: React.FC<SettingsProps> = ({ 
+  selectedSound, 
+  onSoundChange, 
+  isSoundEnabled, 
+  onSoundToggle, 
+  isTickingSoundEnabled,
+  onTickingSoundToggle,
+}) => {
   return (
     <div className="absolute top-14 right-4 bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-4 w-64 z-20 space-y-4">
       <div className="space-y-4">
@@ -41,6 +48,17 @@ const Settings: React.FC<SettingsProps> = ({ selectedSound, onSoundChange, isSou
           <ToggleSwitch
             checked={isSoundEnabled}
             onChange={onSoundToggle}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label htmlFor="ticking-sound-toggle" className={`text-slate-300 transition-opacity ${!isSoundEnabled ? 'opacity-50' : ''}`}>
+            Ticking Sound
+          </label>
+          <ToggleSwitch
+            checked={isTickingSoundEnabled}
+            onChange={onTickingSoundToggle}
+            disabled={!isSoundEnabled}
           />
         </div>
 
@@ -59,22 +77,6 @@ const Settings: React.FC<SettingsProps> = ({ selectedSound, onSoundChange, isSou
             <option value="bell">Bell</option>
             <option value="chime">Chime</option>
           </select>
-        </div>
-      </div>
-      
-      <hr className="border-slate-700" />
-
-      <div className="space-y-3">
-        <h3 className="font-semibold text-lg text-white">Theme</h3>
-        <div className="flex justify-around">
-          {Object.values(themes).map(theme => (
-             <button
-                key={theme.name}
-                onClick={() => onThemeChange(theme)}
-                className={`w-12 h-8 rounded-full border-2 ${currentTheme.name === theme.name ? 'border-white' : 'border-transparent'} transition-all ${theme.background}`}
-                aria-label={`Select ${theme.name} theme`}
-             />
-          ))}
         </div>
       </div>
     </div>

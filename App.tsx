@@ -6,7 +6,6 @@ import Modal from './components/Modal';
 import Confetti from './components/Confetti';
 import Settings from './components/Settings';
 import { SettingsIcon } from './components/Icons';
-import { themes, Theme } from './themes';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<TimerStatus>(TimerStatus.Idle);
@@ -14,11 +13,35 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isTickingSoundEnabled, setIsTickingSoundEnabled] = useState(false);
   const [selectedSound, setSelectedSound] = useState('beep');
-  const [currentTheme, setCurrentTheme] = useState<Theme>(themes.arcticDawn);
 
   const intervalRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  const accentColor = 'text-amber-300';
+  const buttonClass = 'bg-amber-400 hover:bg-amber-300 text-slate-900';
+
+  const calculateTimeLeft = useCallback(() => {
+    const now = new Date();
+
+    // Get the current year in Cambodia's timezone (Asia/Phnom_Penh is UTC+7)
+    // This avoids issues with clients in different timezones
+    const yearFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Phnom_Penh',
+        year: 'numeric'
+    });
+    const currentCambodiaYear = parseInt(yearFormatter.format(now), 10);
+    const nextYearInCambodia = currentCambodiaYear + 1;
+
+    // Create the target date for New Year in Cambodia using ISO 8601 format with timezone offset
+    const newYearDate = new Date(`${nextYearInCambodia}-01-01T00:00:00+07:00`);
+
+    // Calculate the difference from the client's current time
+    const difference = newYearDate.getTime() - now.getTime();
+
+    return Math.max(0, Math.floor(difference / 1000));
+  }, []);
 
   const playAlertSound = useCallback((soundType: string) => {
     if (document.hidden || !isSoundEnabled) return;
@@ -63,13 +86,30 @@ const App: React.FC = () => {
     }
   }, [isSoundEnabled]);
 
-  const calculateTimeLeft = () => {
-    const now = new Date();
-    const nextYear = now.getFullYear() + 1;
-    const newYearDate = new Date(`January 1, ${nextYear} 00:00:00`);
-    const difference = newYearDate.getTime() - now.getTime();
-    return Math.max(0, Math.floor(difference / 1000));
-  };
+  const playTickSound = useCallback(() => {
+    if (document.hidden || !isSoundEnabled || !isTickingSoundEnabled) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const audioCtx = audioContextRef.current;
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.05);
+  }, [isSoundEnabled, isTickingSoundEnabled]);
 
   useEffect(() => {
     const initialSeconds = calculateTimeLeft();
@@ -81,11 +121,12 @@ const App: React.FC = () => {
       setStatus(TimerStatus.Idle);
       setIsModalOpen(true);
     }
-  }, []);
+  }, [calculateTimeLeft]);
 
   useEffect(() => {
     if (status === TimerStatus.Running) {
       intervalRef.current = window.setInterval(() => {
+        playTickSound();
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(intervalRef.current!);
@@ -108,15 +149,15 @@ const App: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [status, playAlertSound, selectedSound]);
+  }, [status, playAlertSound, selectedSound, playTickSound]);
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center font-sans text-white p-4 overflow-hidden transition-colors duration-500 ${currentTheme.background}`}>
+    <div className="min-h-screen flex flex-col items-center justify-center text-white p-4 overflow-hidden">
       {isModalOpen && <Confetti />}
-      <div className="w-full max-w-2xl mx-auto bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 space-y-8 z-10 relative">
+      <div className={`w-full max-w-2xl mx-auto bg-slate-900/50 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 space-y-8 z-10 relative transition-all duration-500 border ${status === TimerStatus.Running ? `animate-pulse-glow ${accentColor}` : 'border-slate-700'}`}>
         <button
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-          className={`absolute top-4 right-4 text-slate-500 hover:${currentTheme.accent.replace('text-','hover:text-')} transition-colors`}
+          className={`absolute top-4 right-4 text-slate-500 hover:${accentColor.replace('text-','hover:text-')} transition-colors`}
           aria-label="Open settings"
         >
           <SettingsIcon />
@@ -128,13 +169,13 @@ const App: React.FC = () => {
             onSoundChange={setSelectedSound}
             isSoundEnabled={isSoundEnabled}
             onSoundToggle={setIsSoundEnabled}
-            currentTheme={currentTheme}
-            onThemeChange={setCurrentTheme}
+            isTickingSoundEnabled={isTickingSoundEnabled}
+            onTickingSoundToggle={setIsTickingSoundEnabled}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
 
-        <h1 className={`text-3xl md:text-5xl font-bold text-center tracking-wider transition-colors duration-500 ${currentTheme.accent}`}>
+        <h1 className={`text-3xl md:text-5xl font-bold text-center tracking-wider transition-colors duration-500 ${accentColor}`}>
           New Year Countdown
         </h1>
         
@@ -144,7 +185,8 @@ const App: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
-        accentColor={currentTheme.accent}
+        accentColor={accentColor}
+        buttonClass={buttonClass}
       />
     </div>
   );

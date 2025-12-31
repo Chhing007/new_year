@@ -8,10 +8,31 @@
     <title>React Countdown Timer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      body {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+        height: 100vh;
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
       @keyframes tick-animation {
-        0% { transform: translateY(0.3em); opacity: 0; }
-        40% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(0); opacity: 1; }
+        0% { transform: translateY(0.3em) scale(0.95); opacity: 0; }
+        40% { transform: translateY(0) scale(1.05); opacity: 1; }
+        100% { transform: translateY(0) scale(1); opacity: 1; }
       }
       .animate-tick {
         display: inline-block;
@@ -38,19 +59,47 @@
         animation-timing-function: linear;
         animation-fill-mode: forwards;
       }
-      
-      @keyframes text-focus-in {
+
+      @keyframes slide-in-bottom {
         0% {
-          filter: blur(12px);
+          transform: translateY(50px);
           opacity: 0;
         }
         100% {
-          filter: blur(0px);
+          transform: translateY(0);
           opacity: 1;
         }
       }
-      .animate-text-focus-in {
-        animation: text-focus-in 1s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+      .animate-slide-in-bottom {
+        animation: slide-in-bottom 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+      }
+
+      @keyframes slide-out-top {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+      }
+      .animate-slide-out-top {
+        animation: slide-out-top 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+      }
+
+      @keyframes pulse-glow {
+        0%, 100% {
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 15px -5px transparent;
+        }
+        50% {
+          border-color: currentColor;
+          box-shadow: 0 0 25px 0px currentColor;
+        }
+      }
+      .animate-pulse-glow {
+        animation: pulse-glow 2.5s infinite ease-in-out;
       }
     </style>
   <script type="importmap">

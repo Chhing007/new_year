@@ -1,23 +1,37 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { wishes } from '../wishes';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   accentColor: string;
+  buttonClass: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, accentColor }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, accentColor, buttonClass }) => {
   const [wishIndex, setWishIndex] = useState(0);
+  const [animationClass, setAnimationClass] = useState('animate-slide-in-bottom');
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       const intervalId = setInterval(() => {
-        setWishIndex((prevIndex) => (prevIndex + 1) % wishes.length);
-      }, 3000); // Change wish every 3 seconds
+        setAnimationClass('animate-slide-out-top');
+        
+        timeoutRef.current = window.setTimeout(() => {
+          setWishIndex((prevIndex) => (prevIndex + 1) % wishes.length);
+          setAnimationClass('animate-slide-in-bottom');
+        }, 500); // Corresponds to the animation duration
 
-      return () => clearInterval(intervalId);
+      }, 3000);
+
+      return () => {
+        clearInterval(intervalId);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      };
     }
   }, [isOpen]);
 
@@ -35,12 +49,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, accentColor }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className={`text-3xl font-bold transition-colors duration-500 ${accentColor}`}>Happy New Year!</h2>
-        <div className="mt-4 text-slate-300 h-12 flex items-center justify-center">
-            <p key={wishIndex} className="animate-text-focus-in">{wishes[wishIndex]}</p>
+        <div className="mt-4 text-slate-300 h-12 flex items-center justify-center overflow-hidden">
+            <p className={animationClass}>{wishes[wishIndex]}</p>
         </div>
         <button
           onClick={onClose}
-          className={`mt-6 px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg shadow-lg transition-transform transform hover:scale-105`}
+          className={`mt-6 px-6 py-2 text-slate-900 font-semibold rounded-lg shadow-lg transition-transform transform hover:scale-105 ${buttonClass}`}
         >
           Close
         </button>
