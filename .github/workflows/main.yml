@@ -1,0 +1,45 @@
+name: Node.js CI/CD # The name of your workflow
+
+on:
+  push:
+    branches: [master] # Trigger on pushes to the main branch
+  workflow_dispatch: # Allow manual triggering of the workflow
+    inputs: # Define inputs for manual triggers
+      deploy-environment:
+        description: 'Select the deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+jobs:
+  build:
+    runs-on: ubuntu-latest # The operating system the job runs on
+
+    steps:
+      - uses: actions/checkout@v4 # Step to check out your repository code
+      - name: Use Node.js
+        uses: actions/setup-node@v4 # Step to set up Node.js environment
+        with:
+          node-version: '20.x' # Specify the desired Node.js version
+          cache: 'npm' # Caches dependencies to speed up subsequent runs
+      - name: Install dependencies
+        run: npm install # Command to install project dependencies
+      - name: Build project
+        run: npm run build # Command to run your project's build script
+      - name: show dir
+        run: echo $GITHUB_WORKSPACE/dist
+      - name: Show build files
+        run: |
+          pwd
+          ls -la
+          ls -la dist
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist/
+          server-dir: /htdocs/
