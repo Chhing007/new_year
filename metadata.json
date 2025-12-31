@@ -1,0 +1,5 @@
+{
+  "name": "React Countdown Timer",
+  "description": "A modern, responsive countdown timer application built with React and Tailwind CSS. Users can set a duration, start, pause, resume, and reset the timer. It features a clean UI, ticking animations, and an audio alert when time is up.",
+  "requestFramePermissions": []
+}
