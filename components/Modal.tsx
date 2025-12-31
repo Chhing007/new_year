@@ -1,13 +1,26 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { wishes } from '../wishes';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  accentColor: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, accentColor }) => {
+  const [wishIndex, setWishIndex] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      const intervalId = setInterval(() => {
+        setWishIndex((prevIndex) => (prevIndex + 1) % wishes.length);
+      }, 3000); // Change wish every 3 seconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -19,12 +32,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
     >
       <div
         className="bg-slate-800 rounded-xl shadow-2xl p-8 m-4 max-w-sm w-full text-center border border-slate-700 transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale"
-        onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+        onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        <h2 className={`text-3xl font-bold transition-colors duration-500 ${accentColor}`}>Happy New Year!</h2>
+        <div className="mt-4 text-slate-300 h-12 flex items-center justify-center">
+            <p key={wishIndex} className="animate-text-focus-in">{wishes[wishIndex]}</p>
+        </div>
         <button
           onClick={onClose}
-          className="mt-6 px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg shadow-lg transition-transform transform hover:scale-105"
+          className={`mt-6 px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg shadow-lg transition-transform transform hover:scale-105`}
         >
           Close
         </button>
