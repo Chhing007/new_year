@@ -101,6 +101,52 @@
       .animate-pulse-glow {
         animation: pulse-glow 2.5s infinite ease-in-out;
       }
+      
+      /* New Animations */
+      @keyframes firework-explode {
+        0% {
+          transform: scale(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(
+            calc(cos(var(--angle)) * var(--radius)), 
+            calc(sin(var(--angle)) * var(--radius) + 200px)
+          ) scale(0);
+          opacity: 0;
+        }
+      }
+
+      .firework {
+        position: absolute;
+        opacity: 0;
+        animation: show-firework 8s forwards;
+      }
+      
+      @keyframes show-firework {
+        0%, 100% { opacity: 0; }
+        5%, 80% { opacity: 1; }
+      }
+
+      .firework-particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        animation: firework-explode 1.5s cubic-bezier(0.1, 0.5, 0.5, 1) forwards;
+      }
+      
+      @keyframes breathing-glow {
+        0%, 100% {
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        50% {
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3);
+        }
+      }
+      .animate-breathing-glow {
+        animation: breathing-glow 4s ease-in-out infinite;
+      }
     </style>
   <script type="importmap">
 {

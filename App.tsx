@@ -4,6 +4,7 @@ import { TimerStatus } from './types';
 import TimerDisplay from './components/TimerDisplay';
 import Modal from './components/Modal';
 import Confetti from './components/Confetti';
+import Fireworks from './components/Fireworks';
 import Settings from './components/Settings';
 import { SettingsIcon } from './components/Icons';
 
@@ -153,7 +154,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-white p-4 overflow-hidden">
-      {isModalOpen && <Confetti />}
+      {isModalOpen && (
+        <>
+          <Confetti />
+          <Fireworks />
+        </>
+      )}
       <div className={`w-full max-w-2xl mx-auto bg-slate-900/50 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 space-y-8 z-10 relative transition-all duration-500 border ${status === TimerStatus.Running ? `animate-pulse-glow ${accentColor}` : 'border-slate-700'}`}>
         <button
           onClick={() => setIsSettingsOpen(!isSettingsOpen)}
@@ -175,7 +181,7 @@ const App: React.FC = () => {
           />
         )}
 
-        <h1 className={`text-3xl md:text-5xl font-bold text-center tracking-wider transition-colors duration-500 ${accentColor}`}>
+        <h1 className={`text-3xl md:text-5xl font-bold text-center tracking-wider transition-colors duration-500 ${accentColor} animate-breathing-glow`}>
           New Year Countdown
         </h1>
         
